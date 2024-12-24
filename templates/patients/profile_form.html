@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Update Health Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Update Health Profile
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="blood_type" class="form-label">Blood Type</label>
+                            <select class="form-select" id="blood_type" name="blood_type" required>
+                                <option value="">Select blood type...</option>
+                                {% for type in blood_types %}
+                                    <option value="{{ type }}" {% if health_profile.blood_type == type %}selected{% endif %}>
+                                        {{ type }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="allergies" class="form-label">Allergies</label>
+                            <textarea class="form-control" id="allergies" name="allergies" rows="3" 
+                                    placeholder="List any allergies, or write 'None' if no allergies">{{ health_profile.allergies }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="chronic_conditions" class="form-label">Chronic Conditions</label>
+                            <textarea class="form-control" id="chronic_conditions" name="chronic_conditions" rows="3"
+                                    placeholder="List any chronic conditions, or write 'None' if none">{{ health_profile.chronic_conditions }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="medications" class="form-label">Current Medications</label>
+                            <textarea class="form-control" id="medications" name="medications" rows="3"
+                                    placeholder="List current medications, or write 'None' if not taking any">{{ health_profile.medications }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emergency_contact_name" class="form-label">Emergency Contact Name</label>
+                            <input type="text" class="form-control" id="emergency_contact_name" 
+                                   name="emergency_contact_name" value="{{ health_profile.emergency_contact_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emergency_contact_phone" class="form-label">Emergency Contact Phone</label>
+                            <input type="tel" class="form-control" id="emergency_contact_phone" 
+                                   name="emergency_contact_phone" value="{{ health_profile.emergency_contact_phone }}" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Health Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

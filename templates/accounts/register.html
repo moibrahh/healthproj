@@ -1,0 +1,898 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Create Account - HealthKiosk{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .auth-header {
+        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        padding: 2rem;
+        border-radius: 16px 16px 0 0;
+        text-align: center;
+        color: white;
+    }
+
+    .auth-header .logo {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+    }
+
+    .auth-header h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-body {
+        padding: 2rem;
+    }
+
+    /* Progress Steps */
+    .step-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+        padding: 0 2rem;
+    }
+
+    .step-progress::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #64748b;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        background: #4299e1;
+        border-color: #4299e1;
+        color: white;
+    }
+
+    .step.completed {
+        background: #48bb78;
+        border-color: #48bb78;
+        color: white;
+    }
+
+    /* Form Styling */
+    .form-step {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .form-step.active {
+        display: block;
+        opacity: 1;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-floating {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-floating > input,
+    .form-floating > textarea {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    .form-floating > input:focus,
+    .form-floating > textarea:focus {
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+
+    /* Password Strength */
+    .password-strength {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s ease;
+    }
+
+    .password-strength-text {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        color: #64748b;
+    }
+
+    /* Buttons */
+    .step-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+    .btn-nav {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not([disabled]) {
+        border-color: #4299e1;
+        color: #4299e1;
+    }
+
+    .btn-nav[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-primary {
+        background: #4299e1;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background: #3182ce;
+        transform: translateY(-1px);
+    }
+
+    /* Alerts */
+    .alert {
+        border: none;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-success {
+        background: #f0fff4;
+        color: #2f855a;
+    }
+
+    .alert-danger {
+        background: #fff5f5;
+        color: #c53030;
+    }
+
+    .alert-warning {
+        background: #fffaf0;
+        color: #c05621;
+    }
+
+    /* Footer */
+    .auth-footer {
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        border-radius: 0 0 16px 16px;
+        text-align: center;
+    }
+
+    .auth-footer a {
+        color: #4299e1;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-footer a:hover {
+        color: #3182ce;
+    }
+
+    @media (max-width: 768px) {
+        .auth-card {
+            margin: 1rem;
+        }
+
+        .auth-header {
+            padding: 1.5rem;
+        }
+
+        .auth-body {
+            padding: 1.5rem;
+        }
+
+        .step-progress {
+            padding: 0 1rem;
+        }
+    }
+
+    /* Custom Alert Styles */
+    .custom-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        max-width: 400px;
+        min-width: 300px;
+        padding: 1rem;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        z-index: 1050;
+        transform: translateX(120%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .custom-alert.show {
+        transform: translateX(0);
+    }
+
+    .custom-alert .alert-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .custom-alert .alert-content {
+        flex-grow: 1;
+    }
+
+    .custom-alert .alert-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+    }
+
+    .custom-alert .alert-message {
+        color: #4a5568;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .custom-alert .close-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: #a0aec0;
+        transition: color 0.2s;
+    }
+
+    .custom-alert .close-btn:hover {
+        color: #4a5568;
+    }
+
+    /* Alert Types */
+    .custom-alert.success {
+        border-left: 4px solid #48bb78;
+    }
+
+    .custom-alert.success .alert-icon {
+        background: #f0fff4;
+        color: #48bb78;
+    }
+
+    .custom-alert.error {
+        border-left: 4px solid #f56565;
+    }
+
+    .custom-alert.error .alert-icon {
+        background: #fff5f5;
+        color: #f56565;
+    }
+
+    .custom-alert.warning {
+        border-left: 4px solid #ed8936;
+    }
+
+    .custom-alert.warning .alert-icon {
+        background: #fffaf0;
+        color: #ed8936;
+    }
+
+    /* Form Validation Styles */
+    .form-floating > input.is-invalid,
+    .form-floating > textarea.is-invalid {
+        border-color: #f56565;
+        background-image: none;
+    }
+
+    .form-floating > input.is-invalid:focus,
+    .form-floating > textarea.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+    }
+
+    .form-floating > input.is-invalid ~ label {
+        color: #f56565;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #f56565;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-header">
+        <div class="logo">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h1>Create Your Account</h1>
+        <p>Join HealthKiosk to start your healthcare journey</p>
+    </div>
+
+    <div class="auth-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="step-progress">
+            <div class="step active" data-step="1">1</div>
+            <div class="step" data-step="2">2</div>
+            <div class="step" data-step="3">3</div>
+        </div>
+
+        <form method="post" id="registrationForm" action="{% url 'accounts:register' %}">
+            {% csrf_token %}
+            
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" data-step="1">
+                <h4 class="mb-4">Personal Information</h4>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="firstName" name="first_name" placeholder=" " required>
+                            <label for="firstName">First Name</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="lastName" name="last_name" placeholder=" " required>
+                            <label for="lastName">Last Name</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="email" name="email" placeholder=" " required>
+                    <label for="email">Email Address</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="tel" class="form-control" id="phone" name="phone_number" placeholder=" " required>
+                    <label for="phone">Phone Number</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="date" class="form-control" id="dob" name="date_of_birth" placeholder=" " required>
+                    <label for="dob">Date of Birth</label>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" class="btn-nav" disabled>Previous</button>
+                    <button type="button" class="btn btn-primary next-step">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Account Security -->
+            <div class="form-step" data-step="2">
+                <h4 class="mb-4">Account Security</h4>
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username" placeholder=" " required>
+                    <label for="username">Username</label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password1" name="password1" placeholder=" " required>
+                    <label for="password1">Password</label>
+                    <div class="password-strength">
+                        <div class="password-strength-bar"></div>
+                    </div>
+                    <div class="password-strength-text"></div>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password2" name="password2" placeholder=" " required>
+                    <label for="password2">Confirm Password</label>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" class="btn-nav prev-step">Previous</button>
+                    <button type="button" class="btn btn-primary next-step">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Contact Details -->
+            <div class="form-step" data-step="3">
+                <h4 class="mb-4">Contact Details</h4>
+
+                <div class="form-floating">
+                    <textarea class="form-control" id="address" name="address" placeholder=" " style="height: 100px" required></textarea>
+                    <label for="address">Full Address</label>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" class="btn-nav prev-step">Previous</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="auth-footer">
+        <p class="mb-2">
+            Already have an account? <a href="{% url 'accounts:patient_login' %}">Sign in here</a>
+        </p>
+        <p class="mb-0">
+            <a href="{% url 'home' %}">
+                <i class="fas fa-arrow-left me-1"></i>Back to Home
+            </a>
+        </p>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registrationForm');
+    const steps = document.querySelectorAll('.form-step');
+    const progressSteps = document.querySelectorAll('.step-progress .step');
+    let currentStep = 1;
+    let activeAlert = null;
+
+    // Custom alert function
+    function showCustomAlert(config) {
+        // Remove existing alert if any
+        if (activeAlert) {
+            activeAlert.remove();
+        }
+
+        const alert = document.createElement('div');
+        alert.className = `custom-alert ${config.type}`;
+        
+        let iconClass;
+        let title;
+        switch(config.type) {
+            case 'success':
+                iconClass = 'fa-check-circle';
+                title = 'Success';
+                break;
+            case 'error':
+                iconClass = 'fa-exclamation-circle';
+                title = 'Error';
+                break;
+            case 'warning':
+                iconClass = 'fa-exclamation-triangle';
+                title = 'Warning';
+                break;
+        }
+
+        alert.innerHTML = `
+            <div class="alert-icon">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">${config.title || title}</div>
+                <div class="alert-message">${config.message}</div>
+            </div>
+            <button type="button" class="close-btn" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        document.body.appendChild(alert);
+        activeAlert = alert;
+
+        // Trigger reflow for animation
+        alert.offsetHeight;
+        alert.classList.add('show');
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 300);
+            if (activeAlert === alert) {
+                activeAlert = null;
+            }
+        }, 5000);
+    }
+
+    // Form validation feedback
+    function showInputError(input, message) {
+        input.classList.add('is-invalid');
+        
+        // Remove existing feedback if any
+        const existingFeedback = input.parentElement.querySelector('.invalid-feedback');
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
+
+        // Add new feedback
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = message;
+        input.parentElement.appendChild(feedback);
+    }
+
+    function clearInputError(input) {
+        input.classList.remove('is-invalid');
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    // Password strength checker
+    const password1Input = document.getElementById('password1');
+    const strengthBar = document.querySelector('.password-strength-bar');
+    const strengthText = document.querySelector('.password-strength-text');
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let requirements = [];
+
+        if (password.length >= 8) {
+            strength += 25;
+            requirements.push('length');
+        }
+        if (password.match(/[A-Z]/)) {
+            strength += 25;
+            requirements.push('uppercase');
+        }
+        if (password.match(/[0-9]/)) {
+            strength += 25;
+            requirements.push('number');
+        }
+        if (password.match(/[^A-Za-z0-9]/)) {
+            strength += 25;
+            requirements.push('special');
+        }
+
+        strengthBar.style.width = strength + '%';
+        
+        if (strength <= 25) {
+            strengthBar.style.background = '#f56565';
+            strengthText.textContent = 'Weak password';
+            strengthText.style.color = '#f56565';
+        } else if (strength <= 50) {
+            strengthBar.style.background = '#ed8936';
+            strengthText.textContent = 'Fair password';
+            strengthText.style.color = '#ed8936';
+        } else if (strength <= 75) {
+            strengthBar.style.background = '#48bb78';
+            strengthText.textContent = 'Good password';
+            strengthText.style.color = '#48bb78';
+        } else {
+            strengthBar.style.background = '#38a169';
+            strengthText.textContent = 'Strong password';
+            strengthText.style.color = '#38a169';
+        }
+
+        const missingRequirements = [];
+        if (!requirements.includes('length')) missingRequirements.push('at least 8 characters');
+        if (!requirements.includes('uppercase')) missingRequirements.push('an uppercase letter');
+        if (!requirements.includes('number')) missingRequirements.push('a number');
+        if (!requirements.includes('special')) missingRequirements.push('a special character');
+
+        if (missingRequirements.length > 0) {
+            showInputError(password1Input, `Password must include ${missingRequirements.join(', ')}`);
+        } else {
+            clearInputError(password1Input);
+        }
+
+        return strength >= 75;
+    }
+
+    password1Input.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+    });
+
+    // Navigation between steps
+    function showStep(step) {
+        steps.forEach(s => {
+            s.classList.remove('active');
+            s.style.display = 'none';
+        });
+        
+        const currentStepEl = steps[step - 1];
+        currentStepEl.classList.add('active');
+        currentStepEl.style.display = 'block';
+
+        // Update progress steps
+        progressSteps.forEach((s, i) => {
+            s.classList.remove('active', 'completed');
+            if (i + 1 === step) {
+                s.classList.add('active');
+            } else if (i + 1 < step) {
+                s.classList.add('completed');
+            }
+        });
+
+        currentStep = step;
+    }
+
+    // Next step button handling
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                showStep(currentStep + 1);
+                showCustomAlert({
+                    type: 'success',
+                    message: 'Step completed successfully!'
+                });
+            }
+        });
+    });
+
+    // Previous step button handling
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', () => {
+            showStep(currentStep - 1);
+        });
+    });
+
+    // Form validation
+    function validateStep(step) {
+        const currentStepEl = document.querySelector(`.form-step[data-step="${step}"]`);
+        const inputs = currentStepEl.querySelectorAll('input, textarea');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (input.required && !input.value.trim()) {
+                isValid = false;
+                showInputError(input, `${input.labels[0].textContent.trim()} is required`);
+            } else {
+                clearInputError(input);
+            }
+        });
+
+        if (step === 2) {
+            const password1 = document.getElementById('password1').value;
+            const password2 = document.getElementById('password2').value;
+            
+            if (password1 !== password2) {
+                isValid = false;
+                showInputError(document.getElementById('password2'), 'Passwords do not match');
+                showCustomAlert({
+                    type: 'error',
+                    title: 'Password Mismatch',
+                    message: 'The passwords you entered do not match. Please try again.'
+                });
+            }
+            
+            if (!checkPasswordStrength(password1)) {
+                isValid = false;
+                showCustomAlert({
+                    type: 'warning',
+                    title: 'Weak Password',
+                    message: 'Please create a stronger password that meets all requirements.'
+                });
+            }
+        }
+
+        return isValid;
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateStep(currentStep)) {
+            showCustomAlert({
+                type: 'error',
+                title: 'Validation Error',
+                message: 'Please fix the errors before submitting.'
+            });
+            return;
+        }
+
+        // Show loading state
+        showCustomAlert({
+            type: 'info',
+            title: 'Processing',
+            message: 'Creating your account...'
+        });
+        
+        // Submit the form
+        form.submit();
+    });
+
+    // Add form error handling for server-side errors
+    {% if form.errors %}
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    showCustomAlert({
+                        type: 'error',
+                        title: 'Form Error',
+                        message: '{{ field }}: {{ error }}'
+                    });
+                {% endfor %}
+            {% endfor %}
+        });
+    {% endif %}
+
+    // Add messages handling
+    {% if messages %}
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for message in messages %}
+                showCustomAlert({
+                    type: '{{ message.tags }}',
+                    title: '{{ message.tags|title }}',
+                    message: '{{ message }}'
+                });
+            {% endfor %}
+        });
+    {% endif %}
+
+    // Initialize first step
+    showStep(1);
+
+    // Date of birth validation
+    const dateInput = document.getElementById('dob');
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const minDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate());
+    
+    dateInput.max = maxDate.toISOString().split('T')[0];
+    dateInput.min = minDate.toISOString().split('T')[0];
+    
+    dateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        if (selectedDate > maxDate) {
+            showCustomAlert({
+                type: 'warning',
+                title: 'Age Restriction',
+                message: 'You must be at least 18 years old to register.'
+            });
+            this.value = '';
+        }
+    });
+
+    // Username availability check
+    const usernameInput = document.getElementById('username');
+    let usernameCheckTimeout;
+
+    usernameInput.addEventListener('input', function() {
+        clearTimeout(usernameCheckTimeout);
+        const username = this.value.trim();
+        
+        if (username.length < 3) {
+            showInputError(this, 'Username must be at least 3 characters long');
+            return;
+        }
+
+        // Show loading state
+        const loadingFeedback = document.createElement('div');
+        loadingFeedback.className = 'text-muted small mt-1';
+        loadingFeedback.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+        
+        // Remove any existing feedback
+        clearInputError(this);
+        this.parentElement.appendChild(loadingFeedback);
+
+        // Debounce the check
+        usernameCheckTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`/accounts/check-username/?username=${encodeURIComponent(username)}`);
+                const data = await response.json();
+                
+                // Remove loading feedback
+                loadingFeedback.remove();
+
+                if (data.available) {
+                    // Show success feedback
+                    const feedback = document.createElement('div');
+                    feedback.className = 'valid-feedback d-block';
+                    feedback.innerHTML = '<i class="fas fa-check"></i> Username is available';
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                    this.parentElement.appendChild(feedback);
+                } else {
+                    showInputError(this, 'This username is already taken');
+                }
+            } catch (error) {
+                loadingFeedback.remove();
+                showInputError(this, 'Error checking username availability');
+            }
+        }, 500); // Wait 500ms after user stops typing
+    });
+
+    // Add valid feedback styles
+    const validFeedbackStyle = document.createElement('style');
+    validFeedbackStyle.textContent = `
+        .valid-feedback {
+            display: none;
+            color: #48bb78;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .is-valid {
+            border-color: #48bb78 !important;
+        }
+
+        .is-valid:focus {
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1) !important;
+        }
+
+        .is-valid ~ .valid-feedback {
+            display: block;
+        }
+    `;
+    document.head.appendChild(validFeedbackStyle);
+});
+</script>
+{% endblock %}
+{% endblock %} 
